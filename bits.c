@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * 吴童 25803050055
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -146,7 +146,7 @@ NOTES:
  *   Rating: 1
  */
 int signMask(void) {
-  return 1;
+  return 1<<31;
 }
 
 // P2
@@ -158,7 +158,7 @@ int signMask(void) {
  *   Rating: 2
  */
 int bitXor(int x, int y) {
-	return 2;
+	return~(~(x&~y)&~(~x&y));
 }
 
 // P3
@@ -170,7 +170,7 @@ int bitXor(int x, int y) {
  *   Rating: 3
  */
 int negativePart(int x){
-  return 3;
+  return(x>>31)&(~x+1);
 }
 
 
@@ -185,7 +185,9 @@ int negativePart(int x){
  *   Rating: 4
  */
 int copyByteWithin(int x, int src, int dst) {
-  return 4;
+  dst<<=3;
+  src<<=3;
+  return(x&~(255<<dst))|((x>>src&255)<<dst);
 }
 
 // P5
@@ -198,7 +200,7 @@ int copyByteWithin(int x, int src, int dst) {
  *   Rating: 4
  */
 int logicalShift(int x, int n) {
-  return 5;
+  return(x>>n)^(x>>31<<31>>n<<1);
 }
 
 // P6
@@ -210,7 +212,11 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int swapNibblePairs(int x) {
-  return 6;
+  int u=15;
+  u=u<<8|u;
+  u=u<<16|u;
+  int v=u<<4;
+  return(x&u)<<4|((x&v)>>4&(u|u>>4));
 }
 
 // P7
@@ -223,7 +229,9 @@ int swapNibblePairs(int x) {
  *   Rating: 4
  */
 int secondLowestZeroBit(int x) {
-  return 7;
+  x|=x+1;
+  x=~x;
+  return x&(~x+1);
 }
 
 // P8
@@ -236,7 +244,12 @@ int secondLowestZeroBit(int x) {
  *   Rating: 5
  */
 int oddParity(int x) {
-  return 8;
+  x^=x>>16;
+  x^=x>>8;
+  x^=x>>4;
+  x^=x>>2;
+  x^=x>>1;
+  return x&1^1;
 }
 
 // P9
@@ -249,7 +262,8 @@ int oddParity(int x) {
  *   Rating: 5
  */
 int rotateRightBits(int x, int n) {
-  return 9;
+  n&=31;
+  return((x>>n)^(x>>31<<31>>n<<1))|(x<<(n^31)+1);
 }
 
 // P10
