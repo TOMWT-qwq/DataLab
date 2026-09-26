@@ -187,7 +187,7 @@ int negativePart(int x){
 int copyByteWithin(int x, int src, int dst) {
   dst<<=3;
   src<<=3;
-  return(x&~(255<<dst))|((x>>src&255)<<dst);
+  return(x&~(255<<dst))|(x>>src&255)<<dst;
 }
 
 // P5
@@ -216,7 +216,7 @@ int swapNibblePairs(int x) {
   u=u<<8|u;
   u=u<<16|u;
   int v=u<<4;
-  return(x&u)<<4|((x&v)>>4&(u|u>>4));
+  return(x&u)<<4|((x&v)>>4&u);
 }
 
 // P7
@@ -298,10 +298,10 @@ int midpointTowardFirst(int x, int y) {
   int ox=x;
   int hx=x>>1;
   int hy=y>>1;
-  x=x&1;
-  y=y&1;
+  x&=1;
+  y&=1;
   hx=~hx;
-  x=x^1;
+  x^=1;
   hx=hx+hy+(x+y+1>>1);
   hx=hx+((ox^y)&(hx>>31)&1);
   return ox+hx;
@@ -318,7 +318,42 @@ int midpointTowardFirst(int x, int y) {
  *   Rating: 7
  */
 int isBetweenEitherOrder(int x, int a, int b) {
-  return 12;
+  int dif1=x^a;
+  dif1|=dif1>>1;
+  dif1|=dif1>>2;
+  dif1|=dif1>>4;
+  dif1|=dif1>>8;
+  dif1|=dif1>>16;
+  dif1&=1;
+  int dif2=a^b;
+  dif2|=dif2>>1;
+  dif2|=dif2>>2;
+  dif2|=dif2>>4;
+  dif2|=dif2>>8;
+  dif2|=dif2>>16;
+  dif2&=1;
+  int dif3=x^b;
+  dif3|=dif3>>1;
+  dif3|=dif3>>2;
+  dif3|=dif3>>4;
+  dif3|=dif3>>8;
+  dif3|=dif3>>16;
+  dif3&=1;
+  int hx=x>>1;
+  int ha=a>>1;
+  int hb=b>>1;
+  x&=1;
+  a&=1;
+  b&=1;
+  int nha=~ha;
+  int na=a^1;
+  int nhb=~hb;
+  int nb=b^1;
+  int xa=hx+nha+(x+na+1>>1)>>31&1;
+  int ba=hb+nha+(b+na+1>>1)>>31&1;
+  int xb=hx+nhb+(x+nb+1>>1)>>31&1;
+  int ab=ha+nhb+(a+nb+1>>1)>>31&1;
+  return(dif1^1)|(dif3^1)|((xa^ba^1)&(xb^ab^1)&dif2);
 }
 
 // P13
