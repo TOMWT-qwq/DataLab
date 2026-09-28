@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * 吴童 25803050055
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -146,7 +146,7 @@ NOTES:
  *   Rating: 1
  */
 int signMask(void) {
-  return 1;
+  return 1<<31;
 }
 
 // P2
@@ -158,7 +158,7 @@ int signMask(void) {
  *   Rating: 2
  */
 int bitXor(int x, int y) {
-	return 2;
+	return~(~(x&~y)&~(~x&y));
 }
 
 // P3
@@ -170,7 +170,7 @@ int bitXor(int x, int y) {
  *   Rating: 3
  */
 int negativePart(int x){
-  return 3;
+  return(x>>31)&(~x+1);
 }
 
 
@@ -185,7 +185,9 @@ int negativePart(int x){
  *   Rating: 4
  */
 int copyByteWithin(int x, int src, int dst) {
-  return 4;
+  dst<<=3;
+  src<<=3;
+  return(x&~(255<<dst))|(x>>src&255)<<dst;
 }
 
 // P5
@@ -198,7 +200,7 @@ int copyByteWithin(int x, int src, int dst) {
  *   Rating: 4
  */
 int logicalShift(int x, int n) {
-  return 5;
+  return(x>>n)^(x>>31<<31>>n<<1);
 }
 
 // P6
@@ -210,7 +212,11 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int swapNibblePairs(int x) {
-  return 6;
+  int u=15;
+  u=u<<8|u;
+  u=u<<16|u;
+  int v=u<<4;
+  return(x&u)<<4|((x&v)>>4&u);
 }
 
 // P7
@@ -223,7 +229,9 @@ int swapNibblePairs(int x) {
  *   Rating: 4
  */
 int secondLowestZeroBit(int x) {
-  return 7;
+  x|=x+1;
+  x=~x;
+  return x&(~x+1);
 }
 
 // P8
@@ -236,7 +244,12 @@ int secondLowestZeroBit(int x) {
  *   Rating: 5
  */
 int oddParity(int x) {
-  return 8;
+  x^=x>>16;
+  x^=x>>8;
+  x^=x>>4;
+  x^=x>>2;
+  x^=x>>1;
+  return x&1^1;
 }
 
 // P9
@@ -249,7 +262,8 @@ int oddParity(int x) {
  *   Rating: 5
  */
 int rotateRightBits(int x, int n) {
-  return 9;
+  n&=31;
+  return((x>>n)^(x>>31<<31>>n<<1))|(x<<(n^31)+1);
 }
 
 // P10
@@ -264,7 +278,8 @@ int rotateRightBits(int x, int n) {
  *   Rating: 5
  */
 int roundEvenPow2(int x, int n) {
-  return 10;
+  x=x+~0+(x>>n&1);
+  return(x>>n)+(x>>n+~0&1)<<n;
 }
 
 // P11
@@ -280,7 +295,16 @@ int roundEvenPow2(int x, int n) {
  *   Rating: 5
  */
 int midpointTowardFirst(int x, int y) {
-  return 11;
+  int ox=x;
+  int hx=x>>1;
+  int hy=y>>1;
+  x&=1;
+  y&=1;
+  hx=~hx;
+  x^=1;
+  hx=hx+hy+(x+y+1>>1);
+  hx=hx+((ox^y)&(hx>>31)&1);
+  return ox+hx;
 }
 
 
@@ -294,7 +318,42 @@ int midpointTowardFirst(int x, int y) {
  *   Rating: 7
  */
 int isBetweenEitherOrder(int x, int a, int b) {
-  return 12;
+  int dif1=x^a;
+  dif1|=dif1>>1;
+  dif1|=dif1>>2;
+  dif1|=dif1>>4;
+  dif1|=dif1>>8;
+  dif1|=dif1>>16;
+  dif1&=1;
+  int dif2=a^b;
+  dif2|=dif2>>1;
+  dif2|=dif2>>2;
+  dif2|=dif2>>4;
+  dif2|=dif2>>8;
+  dif2|=dif2>>16;
+  dif2&=1;
+  int dif3=x^b;
+  dif3|=dif3>>1;
+  dif3|=dif3>>2;
+  dif3|=dif3>>4;
+  dif3|=dif3>>8;
+  dif3|=dif3>>16;
+  dif3&=1;
+  int hx=x>>1;
+  int ha=a>>1;
+  int hb=b>>1;
+  x&=1;
+  a&=1;
+  b&=1;
+  int nha=~ha;
+  int na=a^1;
+  int nhb=~hb;
+  int nb=b^1;
+  int xa=hx+nha+(x+na+1>>1)>>31&1;
+  int ba=hb+nha+(b+na+1>>1)>>31&1;
+  int xb=hx+nhb+(x+nb+1>>1)>>31&1;
+  int ab=ha+nhb+(a+nb+1>>1)>>31&1;
+  return(dif1^1)|(dif3^1)|((xa^ba^1)&(xb^ab^1)&dif2);
 }
 
 // P13
@@ -307,7 +366,17 @@ int isBetweenEitherOrder(int x, int a, int b) {
  *   Rating: 7
  */
 int mul5Sat(int x) {
-  return 13;
+  int h1=x>>1;
+  int l1=(x&1)<<2;
+  int h2=x>>3;
+  int l2=x&7;
+  int s=h1+h2+(l1+l2>>3);
+  int b=(1<<31)+~(x>>31);
+  s=s>>28&15;
+  s=(s^(s>>1))&7;
+  int overflow=(s>>2&1)|(s>>1&1)|(s&1);
+  overflow=~overflow+1;
+  return(overflow&b)|(~overflow&(x+(x<<2)));
 }
 
 // P14
