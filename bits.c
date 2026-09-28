@@ -366,7 +366,17 @@ int isBetweenEitherOrder(int x, int a, int b) {
  *   Rating: 7
  */
 int mul5Sat(int x) {
-  return 13;
+  int h1=x>>1;
+  int l1=(x&1)<<2;
+  int h2=x>>3;
+  int l2=x&7;
+  int s=h1+h2+(l1+l2>>3);
+  int b=(1<<31)+~(x>>31);
+  s=s>>28&15;
+  s=(s^(s>>1))&7;
+  int overflow=(s>>2&1)|(s>>1&1)|(s&1);
+  overflow=~overflow+1;
+  return(overflow&b)|(~overflow&(x+(x<<2)));
 }
 
 // P14
