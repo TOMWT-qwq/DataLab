@@ -389,7 +389,19 @@ int mul5Sat(int x) {
  *   Rating: 7
  */
 int classifyAdd3(int x, int y, int z) {
-  return 14;
+  int hx=x>>3;
+  x&=7;
+  int hy=y>>3;
+  y&=7;
+  int hz=z>>3;
+  z&=7;
+  hx=hx+hy+hz+(x+y+z>>3);
+  int sgn=(hx>>31<<1)+1;
+  hx=hx>>28&15;
+  hx=(hx^(hx>>1))&7;
+  int overflow=(hx>>2&1)|(hx>>1&1)|(hx&1);
+  overflow=~overflow+1;
+  return overflow&sgn;
 }
 
 // P15
