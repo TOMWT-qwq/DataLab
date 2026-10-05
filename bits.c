@@ -418,7 +418,53 @@ int classifyAdd3(int x, int y, int z) {
  *   Rating: 7
  */
 unsigned floatScaleThreeHalves(unsigned uf) {
-  return 15;
+  unsigned sign = uf & (1u << 31);
+  unsigned exp = (uf >> 23) & 255u;
+  unsigned frac = uf & ((1u << 23) - 1);
+  unsigned M, Q, R, e;
+
+  if (exp == 255u) return uf;
+
+  if (exp == 0) {
+    if (frac == 0) return uf;
+
+    Q = 3u * frac;
+    R = Q >> 1;
+    if ((Q & 1u) && (R & 1u)) R++;
+
+    if (R >= (1u << 23)) {
+      return sign | (1u << 23) | (R - (1u << 23));
+    }
+    return sign | R;
+  }
+
+  M = (1u << 23) | frac;
+  Q = 3u * M;
+
+  if (Q < (1u << 25)) {
+    e = exp;
+    R = Q >> 1;
+    if ((Q & 1u) && (R & 1u)) R++;
+  } else {
+    e = exp + 1u;
+    R = Q >> 2;
+    if ((Q & 3u) > 2u) {
+      R++;
+    } else if ((Q & 3u) == 2u && (R & 1u)) {
+      R++;
+    }
+  }
+
+  if (R == (1u << 24)) {
+    R = (1u << 23);
+    e++;
+  }
+
+  if (e >= 255u) {
+    return sign | (255u << 23);
+  }
+
+  return sign | (e << 23) | (R - (1u << 23));
 }
 
 // P16
@@ -434,7 +480,40 @@ unsigned floatScaleThreeHalves(unsigned uf) {
  *   Rating: 10
  */
 unsigned floatRoundEven(unsigned uf) {
-  return 16;
+  unsigned sign = uf & (1u << 31);
+  unsigned exp = (uf >> 23) & 255u;
+  unsigned frac = uf & ((1u << 23) - 1);
+  unsigned M, shift, Q, rem, half, n, p, res, t;
+
+  if (exp == 255u) return uf;
+  if (exp == 0) {
+    if (frac == 0) return uf;
+    return sign;
+  }
+  if (exp >= 150u) return uf;
+  if (exp <= 125u) return sign;
+
+  shift = 150u - exp;
+  M = (1u << 23) | frac;
+  Q = M >> shift;
+  rem = M & ((1u << shift) - 1);
+  half = 1u << (shift - 1);
+
+  if (rem > half || (rem == half && (Q & 1u))) Q++;
+  n = Q;
+
+  if (n == 0u) return sign;
+
+  t = n;
+  p = 0;
+  if (t >> 16) { p += 16; t >>= 16; }
+  if (t >> 8)  { p += 8;  t >>= 8;  }
+  if (t >> 4)  { p += 4;  t >>= 4;  }
+  if (t >> 2)  { p += 2;  t >>= 2;  }
+  if (t >> 1)  { p += 1;  t >>= 1;  }
+
+  res = sign | ((p + 127u) << 23) | ((n << (23u - p)) & ((1u << 23) - 1));
+  return res;
 }
 
 // P17
@@ -448,7 +527,45 @@ unsigned floatRoundEven(unsigned uf) {
  *   Rating: 10
  */
 unsigned float_i2f(int x) {
-  return 17;
+  unsigned sign = 0;
+  unsigned ax;
+  unsigned t;
+  int p = 0;
+  unsigned exp, frac, Q, rem, half, s;
+
+  if (x < 0) {
+    sign = 1u << 31;
+    ax = 0u - (unsigned)x;
+  } else {
+    ax = (unsigned)x;
+  }
+
+  if (ax == 0) return 0;
+
+  t = ax;
+  while (t >>= 1) p++;
+
+  exp = (unsigned)(p + 127);
+
+  if (p <= 23) {
+    frac = (ax << (23 - p)) & ((1u << 23) - 1);
+    return sign | (exp << 23) | frac;
+  }
+
+  s = (unsigned)(p - 23);
+  Q = ax >> s;
+  rem = ax & ((1u << s) - 1);
+  half = 1u << (s - 1);
+
+  if (rem > half || (rem == half && (Q & 1u))) Q++;
+
+  if (Q == (1u << 24)) {
+    Q >>= 1;
+    exp++;
+  }
+
+  frac = Q & ((1u << 23) - 1);
+  return sign | (exp << 23) | frac;
 }
 
 
