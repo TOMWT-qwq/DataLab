@@ -579,7 +579,16 @@ unsigned float_i2f(int x) {
  *   Rating: 10
  */
 int bitCount(int x) {
-  return 18;
+  int u=0x55;
+  u=u<<24|u<<16|u<<8|u;
+  x=(x&u)+(x>>1&u);
+  u=0x33;
+  u=u<<24|u<<16|u<<8|u;
+  x=(x&u)+(x>>2&u);
+  u=15;
+  u=u<<24|u<<16|u<<8|u;
+  x=(x&u)+(x>>4&u);
+  return x+(x>>8)+(x>>16)+(x>>24)&255;
 }
 
 // P19
