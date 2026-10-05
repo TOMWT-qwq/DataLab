@@ -535,9 +535,9 @@ unsigned float_i2f(int x) {
 
   if (x < 0) {
     sign = 1u << 31;
-    ax = 0u - (unsigned)x;
+    ax = 0u - x;
   } else {
-    ax = (unsigned)x;
+    ax = x;
   }
 
   if (ax == 0) return 0;
@@ -545,14 +545,14 @@ unsigned float_i2f(int x) {
   t = ax;
   while (t >>= 1) p++;
 
-  exp = (unsigned)(p + 127);
+  exp = p + 127;
 
   if (p <= 23) {
     frac = (ax << (23 - p)) & ((1u << 23) - 1);
     return sign | (exp << 23) | frac;
   }
 
-  s = (unsigned)(p - 23);
+  s = p - 23;
   Q = ax >> s;
   rem = ax & ((1u << s) - 1);
   half = 1u << (s - 1);
