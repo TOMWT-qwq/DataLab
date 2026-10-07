@@ -600,7 +600,38 @@ int bitCount(int x) {
  *   Max ops: 34
  *   Rating: 10
  */
-int bitReverse(int x)
-{
-  return 19;
+int bitReverse(int x) {
+  int m8, m4, m2, m1, m16;
+  int u;
+
+  // Build M8 = 0x00FF00FF
+  u = 0xFF;
+  u = u | (u << 16);
+  m8 = u;
+
+  // Build M4 = 0x0F0F0F0F
+  u = u ^ (u << 4);
+  m4 = u;
+
+  // Build M2 = 0x33333333
+  u = u ^ (u << 2);
+  m2 = u;
+
+  // Build M1 = 0x55555555
+  u = u ^ (u << 1);
+  m1 = u;
+
+  // Build M16 = 0x0000FFFF
+  u = 0xFF;
+  u = u | (u << 8);
+  m16 = u;
+
+  // Reverse bits
+  x = ((x & m1) << 1) | ((x >> 1) & m1);
+  x = ((x & m2) << 2) | ((x >> 2) & m2);
+  x = ((x & m4) << 4) | ((x >> 4) & m4);
+  x = ((x & m8) << 8) | ((x >> 8) & m8);
+  x = (x << 16) | ((x >> 16) & m16);
+
+  return x;
 }
